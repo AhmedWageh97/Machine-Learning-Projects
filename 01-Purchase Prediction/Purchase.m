@@ -11,7 +11,7 @@ Data = Data{:,:};
 
 %   Select Training Set
 %Train_Data = Data(1:length(Data)/2 ,2:end);
-Train_Data = Data(:,2:end);
+Train_Data = Data(mod(Data(:,3),2) == 0, 2:end);
 %   Select Test Set Odd Age people only
 Test_Data  = Data(mod(Data(:,3),2) == 1, 2:end);
 
@@ -20,7 +20,7 @@ Theta = zeros(3,1);
 
 %   Feature Scaling
 global X_Data
-X_Data = [ones(1,length(Data)); Data(:, 3)'; Data(:, 4)'];
+X_Data = [ones(1,length(Train_Data)); Train_Data(:, 2)'; Train_Data(:, 3)'];
 X_Data = [X_Data(1, :); (X_Data(2, :) - mean(Train_Data(:, 2))) ./ (max(Train_Data(:, 2)) - min(Train_Data(:, 2))); (X_Data(3, :) - mean(Train_Data(:, 3))) ./ (max(Train_Data(:, 3)) - min(Train_Data(:, 3)))];
 
 %   Defining the output
@@ -89,12 +89,32 @@ hold on
 Purchasing_Coordinates = zeros(1,2);
 Not_Purchasing_Coordinates = zeros(1,2);
 
+%   Preparing the data to measure the accuracy of the model
+Acc_Test_Data = [ones(length(Test_Data(:,1)),1) Test_Data(:,2) Test_Data(:,3)]';
+
+%   For Accuracy Test
+Right_Classification = 0;
+Wrong_Classification = 0;
+
 
 for i = 1:length(Test_Data)
+    H_Theta = FinalThetas' * Acc_Test_Data(:,i);
+    H_Theta = 1 / (1 + exp(-H_Theta));
+    
     if Test_Data(i,4) == 1
-        Purchasing_Coordinates(end + 1, :) = [Test_Data(i,2) Test_Data(i,3)];        
+        Purchasing_Coordinates(end + 1, :) = [Test_Data(i,2) Test_Data(i,3)]; 
+        if H_Theta >= 0.5
+            Right_Classification = Right_Classification + 1;
+        else
+            Wrong_Classification = Wrong_Classification + 1;
+        end
     else
         Not_Purchasing_Coordinates(end + 1, :) = [Test_Data(i,2) Test_Data(i,3)];
+        if H_Theta < 0.5
+            Right_Classification = Right_Classification + 1;
+        else
+            Wrong_Classification = Wrong_Classification +1;
+        end
     end
     hold on
 end
@@ -109,3 +129,7 @@ xlabel('Age (After scaling)')
 ylabel('Salary (After scaling)')
 
 legend('Classifier Edge','Will purchase','Will not Purchase')
+
+%   Calculating the Accuracy
+Accuracy = Right_Classification / (Right_Classification + Wrong_Classification);
+fprintf("For the choosen test set the accuracy = %0.2f%c \n", Accuracy*100, '%');
