@@ -36,11 +36,11 @@ Iter_Times = 100;
 options = optimset('GradObj', 'on', 'MaxIter', Iter_Times);
 
 %   Start optimization to find Thetas
-[FinalThetas CostVal Flagg] = fminunc(@Cost_Function, Theta, options);
+[FinalThetas, CostVal, Flagg] = fminunc(@Cost_Function, Theta, options);
 
 %   Plot Training data with the result of classification
 figure(1)
-X_Plot = [-1: 0.05: 1];
+X_Plot = -1: 0.05: 1;
 Y_Plot = -(FinalThetas(1) + X_Plot * FinalThetas(2)) / (FinalThetas(3));
 plot(X_Plot, Y_Plot, '-k');
 set(gcf,'name','Training set with output classifier')

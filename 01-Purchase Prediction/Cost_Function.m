@@ -1,4 +1,4 @@
-function [jVal gradient] = Cost_Function(Thata)
+function [jVal, gradient] = Cost_Function(Thata)
    global X_Data
    global Y_Data
    
